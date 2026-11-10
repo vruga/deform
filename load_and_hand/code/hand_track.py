@@ -5,7 +5,7 @@ from mediapipe.tasks.python import vision
 MODEL=sys.argv[1]
 opts=vision.HandLandmarkerOptions(base_options=mpp.BaseOptions(model_asset_path=MODEL),running_mode=vision.RunningMode.IMAGE,num_hands=2,min_hand_detection_confidence=0.3,min_hand_presence_confidence=0.3)
 det=vision.HandLandmarker.create_from_options(opts)
-for p in sorted(glob.glob(os.path.expanduser('~/Documents/tyre*.mov'))):
+for p in sorted(glob.glob(os.path.expanduser(os.environ.get('TYRE_VIDEOS','~/Documents')+'/tyre*.mov'))):
     name=os.path.basename(p)[:-4].replace('-','_');c=cv2.VideoCapture(p);rows=[];i=0
     while True:
         ok,f=c.read()

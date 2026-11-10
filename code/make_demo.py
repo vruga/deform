@@ -2,7 +2,7 @@
 Model = the ring fitted ONLY on clips 1-2 (kb, release speed, rest in ../results/tyre_ring_fit.json). The only thing given to the model for each event
 is its own measured squeezed width z0. Panels: real video (top view), simulated tube (the 2D ring extruded over the 37 mm tread; with full-width contact
 the 3D stack in tyre_ring3d.py gives the same motion), and the width traces (real black, model red).
-Run from ../data:  PYTHONPATH=../code python ../code/make_demo.py   (needs ffmpeg, opencv, matplotlib, numba; videos in ~/Documents)"""
+Run from ../data:  PYTHONPATH=../code python ../code/make_demo.py   (needs ffmpeg, opencv, matplotlib, numba; videos in $TYRE_VIDEOS, default ~/Documents)"""
 import glob,json,os,subprocess,numpy as np,cv2
 import matplotlib;matplotlib.use('Agg');import matplotlib.pyplot as plt
 from tyre_fit2 import events
@@ -46,7 +46,7 @@ if __name__=='__main__':
     fig=plt.figure(figsize=(12,4.2),dpi=80);axs=[fig.add_subplot(1,3,1),fig.add_subplot(1,3,2,projection='3d'),fig.add_subplot(1,3,3)];fig.subplots_adjust(left=.03,right=.98,wspace=.15,bottom=.16,top=.9)
     allf=[]
     for c,e,tg in picks:
-        cap=cv2.VideoCapture(os.path.expanduser('~/Documents/'+names[c]));allf+=render(c,e,0,cap,fig,axs,tg%e['t_abs']);print(c,len(allf),flush=True)
+        cap=cv2.VideoCapture(os.path.expanduser(os.environ.get('TYRE_VIDEOS','~/Documents')+'/'+names[c]));allf+=render(c,e,0,cap,fig,axs,tg%e['t_abs']);print(c,len(allf),flush=True)
     os.makedirs('../figures/demo_frames',exist_ok=True)
     for i,fr in enumerate(allf):cv2.imwrite('../figures/demo_frames/f%04d.png'%i,cv2.cvtColor(fr,cv2.COLOR_RGB2BGR))
     fps=FPS_SIM/SLOW

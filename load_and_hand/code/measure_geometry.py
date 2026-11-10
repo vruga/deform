@@ -1,7 +1,7 @@
 """Geometry and frame-rate checks for the side-view clips (the exact analyses run for README section A2). Videos are read from ~/Documents."""
 import cv2,numpy as np,os
 A=cv2.aruco;det=A.ArucoDetector(A.getPredefinedDictionary(A.DICT_4X4_50),A.DetectorParameters())
-V=lambda n:cv2.VideoCapture(os.path.expanduser(f'~/Documents/{n}.mov'))
+V=lambda n:cv2.VideoCapture(os.path.expanduser(os.environ.get('TYRE_VIDEOS','~/Documents')+f'/{n}.mov'))
 def flicker(n):                      # true capture rate from the 100 Hz mains flicker
     c=V(n);m=[]
     while True:

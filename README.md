@@ -26,16 +26,16 @@ The assignment asks for a deformation model whose stiffness and damping are fitt
 
 ## 2. Fit and fresh prediction
 
-Protocol: fit on `tyre_1` and `tyre_2` (6 events), freeze, then predict `tyre_3` and `tyre_4` (6 events). Each test event supplies only its own measured squeezed width. Also leave-one-clip-out (LOCO, all 12 events as test events).
+Protocol: fit on `tyre_1` and `tyre_2`, freeze, then predict `tyre_3` and `tyre_4`. Each test event supplies only its own measured squeezed width. Also leave-one-clip-out (LOCO, every clip held out in turn).
 
-RMSE of width / resting width (0.04 is about 3 mm). Null = "stays squeezed".
+RMSE of width / resting width (0.04 is about 3 mm). Null = "stays squeezed". A flick is a squeeze held under 0.3 s (not press-hold-release); the rule was written down from the interaction before comparing models.
 
-| event set | null | first-order (tau 0.143 s) | ring model | LOCO first-order / ring |
+| | null | first-order (tau 0.143 s) | ring / 3D model | LOCO first-order / ring |
 |---|---|---|---|---|
-| all squeezes, flicks included (7 test events) | 0.358 | 0.047 | not run | 0.045 / n.a. |
-| **flicks excluded, final (6 test events)** | **0.343** | **0.036** | **0.040** | **0.032 / 0.034** |
+| flicks included | 0.358 | 0.047 | not run | 0.045 / n.a. |
+| flicks excluded | 0.343 | 0.036 | 0.040 | 0.032 / 0.034 |
 
-The flick rule (a squeeze held under 0.3 s is a flick, not press-hold-release) was decided from the interaction before comparing models. **Most of the 0.047 to 0.036 drop comes from that exclusion, not from a better model.** The physical ring is not more accurate than the one-line exponential; its value is parameters in real units and a 3D shape.
+Most of the drop from 0.047 to 0.036 comes from excluding flicks, not from a better model. The ring is not more accurate than the one-line exponential; its value is parameters in real units and a 3D shape. The best ring variant (release speed depending on squeeze depth) reaches LOCO 0.029, but its interval against first-order touches zero, so it is not a proven gain.
 
 ## 3. What the video can and cannot identify
 
@@ -63,20 +63,24 @@ Release-speed table (fixed, not fitted; same events and protocol):
 
 Thin-ring cross-section (squeeze is in-plane); overdamped (verified: damping ratio ran to its upper bound, 5 to 12); frame rate 240 fps measured from the 100 Hz room-light flicker, not assumed; scale from the marker; the lip fraction (40 %) and main-zone wall are estimates, shown as sensitivity, not results; one load point for the absolute stiffness.
 
-## 6. Not worked: exploratory attempts
+## 6. A second object: the pencil pouch (`pouch/`)
 
-Hand tracking (MediaPipe loses the fingertips as the hand curls round the black tyre), a tongs clip (its jaws could not be separated from the background), a pencil pouch (held and rotated, so the tyre pipeline does not transfer), and the lift-off recovery in the weight test (only shows recovery is faster than the 0.33 s lift). Details in `docs/full_log.md` and `load_and_hand/`.
+The pouch (a stiff silicone cylinder, red and grey versions of the same object) is the case the tyre method cannot handle: the hand covers it while it is pressed, so a width-versus-time recovery cannot be fitted. What can be measured is its shape **when the hand is off**.
+On the red pouch with a fixed camera (`IMG_9810`) the body aspect in three hand-free stretches, separated by 10 to 20 s of handling that includes squeezes to 0.2 to 0.3, is **0.414, 0.412, 0.411**: a residual set of **-0.5 % and -0.2 %** (scatter about 0.5 %) and no creep (+0.06 %/s). It is already at its rest shape when the hand leaves, so it has **no detectable memory**; the release itself is hidden by the hand and the clip is 30 fps, so this is an end-state measurement, not a fitted stiffness or damping.
+The grey pouch could not be segmented from the table by colour (the two have almost the same chroma), so there is no grey result; the 240 fps red clips are too noisy to analyse. Details, figure and what a real fit would need: `pouch/README.md`.
+
+## 6b. Not worked: other exploratory attempts
+
+Hand tracking (MediaPipe loses the fingertips as the hand curls round the black tyre), a tongs clip (its jaws could not be separated from the background), and the lift-off recovery in the weight test (it only shows recovery is faster than the 0.33 s lift). Details in `docs/full_log.md` and `load_and_hand/`.
 
 ## 7. Reproduce
 
-Python with numpy, scipy, opencv, matplotlib, numba; videos are read from `~/Documents` (`tyre_1.mov`, `tyre_2.mov`, `tyre-3.mov`, `tyre_4.mov`).
+Python with numpy, scipy, opencv, matplotlib, numba (and ffmpeg for the demo). Videos are read from `$TYRE_VIDEOS` (default `~/Documents`): `tyre_1.mov`, `tyre_2.mov`, `tyre-3.mov`, `tyre_4.mov`.
 
 ```
-sh run.sh extract                    # width signals from the videos, then fits and tables
-cd data && PYTHONPATH=../code python ../code/identifiability.py        # figure in section 3
-cd data && PYTHONPATH=../code python ../code/tyre_no_release_param.py  # release-speed table
-cd data && PYTHONPATH=../code python ../code/tyre_ring3d_fit.py       # 3D stack with a stepped wall
-cd data && PYTHONPATH=../code python ../code/make_demo.py              # demo video and gif
+sh run.sh            # steps 2-7 on the saved width signals (about 11 minutes on 8 cores; the slow NumPy ring fit dominates)
+sh run.sh extract    # first re-read the videos (slow)
+sh run.sh demo       # also rebuild figures/demo.mp4 and demo.gif
 ```
 
 ```

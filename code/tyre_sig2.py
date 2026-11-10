@@ -12,7 +12,7 @@ def run(path,fps=240.):
         q=max(cnt,key=cv2.contourArea); (cx,cy),(w,h),_=cv2.minAreaRect(q); rows.append([min(w,h),max(w,h),cv2.contourArea(q),cx])
     r=np.array(rows); t=np.arange(len(r))/fps
     np.savez(f'tyreN_sig_{name}.npz',t=t,minor=r[:,0],major=r[:,1],area=r[:,2],fps=fps); print(name,len(r),flush=True)
-for p in sorted(glob.glob(os.path.expanduser('~/Documents/tyre*.mov'))): run(p)
+for p in sorted(glob.glob(os.path.expanduser(os.environ.get('TYRE_VIDEOS','~/Documents')+'/tyre*.mov'))): run(p)
 import matplotlib;matplotlib.use('Agg');import matplotlib.pyplot as plt
 fig,ax=plt.subplots(4,1,figsize=(16,12))
 for a,p in zip(ax,sorted(glob.glob('tyreN_sig_*.npz'))):

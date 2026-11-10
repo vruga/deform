@@ -1,6 +1,6 @@
 import cv2,numpy as np,os,sys
 A=cv2.aruco;det=A.ArucoDetector(A.getPredefinedDictionary(A.DICT_4X4_50),A.DetectorParameters())
-c=cv2.VideoCapture(os.path.expanduser('~/Documents/tyre_deformation.mov'));rows=[]
+c=cv2.VideoCapture(os.path.expanduser(os.environ.get('TYRE_VIDEOS','~/Documents')+'/tyre_deformation.mov'));rows=[]
 while True:
     ok,f=c.read()
     if not ok:break

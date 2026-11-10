@@ -1,5 +1,5 @@
 import cv2,numpy as np,os,glob
-for p in sorted(glob.glob(os.path.expanduser('~/Documents/tyre*.mov'))):
+for p in sorted(glob.glob(os.path.expanduser(os.environ.get('TYRE_VIDEOS','~/Documents')+'/tyre*.mov'))):
     name=os.path.basename(p)[:-4].replace('-','_');c=cv2.VideoCapture(p);rows=[]
     while True:
         ok,f=c.read()
