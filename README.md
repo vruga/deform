@@ -10,8 +10,8 @@
 
 1. **One video gives the recovery time, not stiffness and damping separately.** The tyre is overdamped (no overshoot), so only their ratio shows: **tau = 0.145 s** (bootstrap 95 % CI 0.129 to 0.165).
 2. **A known force gives the scale.** A 333 g weight on the standing tyre sags it 7.6 mm: **0.43 N/mm**, a bending stiffness **B = 2.8e-3 N m$^2$** and a Young's modulus of about **0.5 to 1 MPa**, and a damping of order 60 N s/m.
-3. **The hand's release barely matters.** An instant release (no release parameter at all) predicts held-out squeezes within 0.001 of a fitted release speed.
-4. **The rest is a floor.** Fitting each squeeze separately reaches 0.020; any shared model sits at 0.036 to 0.040, and every model family tried lands on the same number.
+3. **The shared prediction does not need a release speed.** An instant release (no release parameter at all) predicts held-out squeezes within 0.001 of a fitted release speed. This says the average recovery is set by the rubber; it does not say what causes the squeeze-to-squeeze differences (finding 4).
+4. **All models saturate at about 0.036 held-out error.** Fitting each squeeze separately reduces it to 0.020, so most of the residual is squeeze-to-squeeze variation in recovery speed (it varies about 14x between squeezes). **We could not measure the cause.** The hand's release is the leading hypothesis, but contact and friction effects, strain-dependent rubber behaviour and measurement bias are not ruled out; a per-squeeze fit also improves any model simply by adding a free parameter per squeeze, so it is not specific evidence for the hand.
 
 ## The model in four equations
 
@@ -58,7 +58,7 @@ Checks that go beyond the width (`code/extra_tests.py`):
 
 * **It predicts the tyre's length too**, which was never fitted: error 0.063 on held-out squeezes against 0.103 and 0.208 for "no change". It gets the direction and about 60 % of the size.
 * **No slow tail.** A fractional recovery $E_\alpha(-(t/\tau)^\alpha)$ fits to $\alpha=0.96$, the plain exponential.
-* **Depth dependence is not geometry.** Shallow squeezes recover more slowly (correlation +0.82, 0.10 to 0.29 s), but the ring predicts the opposite sign and only 0.13 to 0.14 s. That leaves the hand's release or a strain-dependent rubber, which these clips cannot separate.
+* **Depth dependence is not geometry.** Shallow squeezes recover more slowly (correlation +0.82, 0.10 to 0.29 s), but the ring predicts the opposite sign and only 0.13 to 0.14 s. That leaves the hand's release, a strain-dependent rubber, contact and friction, or measurement bias on small signals. None was measured here, so the clips cannot tell them apart.
 * **The ring is converged, and a finer mesh slightly helps.** Going from 16 to 96 nodes (stiffness and drag rescaled so the physics is unchanged) changes predictions by at most 0.005. Refitting at 96 nodes (instant release) gives held-out error 0.0381 against 0.0407 and LOCO 0.0330 against 0.0352, a gain about the size of the noise (0.003); the stiffness parameter moves from 1.51 to 1.60 (`code/checks/fit_n_nodes.py`).
 * **The weight-test stiffness was off by 2x, and the cause is known.** The first calibration used a 16-node ring and its outer radius (75.8 mm) as the bending radius. A 16-node ring is about 20 % too soft, and the bending radius is the wall's centreline (64 mm), which accounts for another factor 1.6. Solving the same 3.27 N, 7.6 mm test properly gives 5.6e-3 $\to$ 4.6e-3 (96 nodes) $\to$ **2.8e-3 N m$^2$** (centreline), matching an independent 48-node estimate (2.5e-3) and the thin-ring formula (2.1e-3) (`code/checks/static_calibration_geometry.py`).
 * **Per-squeeze rest level does not help** (0.047, worse than a global rest level).
