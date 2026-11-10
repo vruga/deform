@@ -1,5 +1,8 @@
 # Experiment 1, part B: absolute stiffness, Young's modulus and the hand's release speed
 
+> **Correction (see the top-level README).** The bending stiffness 5.6e-3 N m^2 and modulus 1.1 MPa below used a 16-node ring and the outer radius. Solved on the wall centreline with a converged mesh the same weight test gives **B = 2.8e-3 N m^2** and **E about 0.55 MPa** (uniform 11.8 mm wall; up to about 1 MPa if the thin side is 7 mm). `code/checks/static_calibration_geometry.py` reproduces 5.58e-3 and 2.78e-3.
+
+
 Part A of this experiment (`../README.md`) fits the tyre's recovery from squeeze videos. Two things it cannot give:
 
 1. **Absolute stiffness.** A video shows displacement, not force. With an overdamped tyre only the ratio of stiffness to

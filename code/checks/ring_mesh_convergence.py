@@ -1,5 +1,5 @@
 """Mesh convergence of the ring. Same physics as tyre_ring_fast (stretch + turning-angle bending, overdamped, penalty plates), N-flexible.
-Continuum-consistent scaling: bending B = kb*l0 fixed -> kb_N = kb16*16/N ; drag per length fixed -> node drag c = l0/l0_16 ; KS,KC scaled by N/16 (variant 'k') or fixed (variant 'f').
+Continuum-consistent scaling: bending B = kb*l0 fixed -> kb_N = kb16*N/16 (l0 shrinks as 1/N) ; drag per length fixed -> node drag c = l0/l0_16 ; KS,KC scaled by N/16 (variant 'k') or fixed (variant 'f').
 Compare z(t) for the fitted parameters (kb16=1.74, v=2.72, rest=.979) at several start widths."""
 
 import numpy as np

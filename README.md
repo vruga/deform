@@ -9,7 +9,7 @@
 ## What we found
 
 1. **One video gives the recovery time, not stiffness and damping separately.** The tyre is overdamped (no overshoot), so only their ratio shows: **tau = 0.145 s** (bootstrap 95 % CI 0.129 to 0.165).
-2. **A known force gives the scale.** A 333 g weight on the standing tyre sags it 7.6 mm: **0.43 N/mm**, so a damping of order 60 N s/m.
+2. **A known force gives the scale.** A 333 g weight on the standing tyre sags it 7.6 mm: **0.43 N/mm**, a bending stiffness **B = 2.8e-3 N m$^2$** and a Young's modulus of about **0.5 to 1 MPa**, and a damping of order 60 N s/m.
 3. **The hand's release barely matters.** An instant release (no release parameter at all) predicts held-out squeezes within 0.001 of a fitted release speed.
 4. **The rest is a floor.** Fitting each squeeze separately reaches 0.020; any shared model sits at 0.036 to 0.040, and every model family tried lands on the same number.
 
@@ -33,7 +33,7 @@ The plates close to the measured squeezed width, then open. Free parameters: $k_
 
 **3D.** Five of these rings stacked along the 37 mm tread, joined by axial springs $\tfrac12 k_a\sum(|\mathbf{X}_{s+1,i}-\mathbf{X}_{s,i}|-h)^2$, with a thicker wall on the lip side (the videos show a step inside) so that slice bending stiffness scales as wall$^3$. Plates touch the full width: the squeezes reach about 0.5 of the width, which partial contact cannot produce.
 
-**Units.** $B = k_b\,\ell_0$ is the bending stiffness (EI); the weight test fixes it. Young's modulus follows from $E = 12\,B\,/\sum_i b_i t_i^3$ ($b$ = zone width, $t$ = wall).
+**Units.** $B = k_b\,\ell_0$ is the bending stiffness (EI); the weight test fixes it. Young's modulus follows from $E = 12\,B\,/\sum_i b_i t_i^3$ ($b$ = zone width, $t$ = wall). The weight test has to be solved on the wall's **centreline** (64 mm across) with a converged mesh; see below.
 
 ## Predicting squeezes it has not seen
 
@@ -59,12 +59,13 @@ Checks that go beyond the width (`code/extra_tests.py`):
 * **It predicts the tyre's length too**, which was never fitted: error 0.063 on held-out squeezes against 0.103 and 0.208 for "no change". It gets the direction and about 60 % of the size.
 * **No slow tail.** A fractional recovery $E_\alpha(-(t/\tau)^\alpha)$ fits to $\alpha=0.96$, the plain exponential.
 * **Depth dependence is not geometry.** Shallow squeezes recover more slowly (correlation +0.82, 0.10 to 0.29 s), but the ring predicts the opposite sign and only 0.13 to 0.14 s. That leaves the hand's release or a strain-dependent rubber, which these clips cannot separate.
-* **The ring is converged.** Going from 16 to 96 nodes (stiffness and drag rescaled) changes predictions by at most 0.005, below the 0.020 floor. The static weight calibration is not: the 16-node ring is about 20 % too soft, so the bending stiffness it gives may be about 20 % high.
+* **The ring is converged, and a finer mesh slightly helps.** Going from 16 to 96 nodes (stiffness and drag rescaled so the physics is unchanged) changes predictions by at most 0.005. Refitting at 96 nodes (instant release) gives held-out error 0.0381 against 0.0407 and LOCO 0.0330 against 0.0352, a gain about the size of the noise (0.003); the stiffness parameter moves from 1.51 to 1.60 (`code/checks/fit_n_nodes.py`).
+* **The weight-test stiffness was off by 2x, and the cause is known.** The first calibration used a 16-node ring and its outer radius (75.8 mm) as the bending radius. A 16-node ring is about 20 % too soft, and the bending radius is the wall's centreline (64 mm), which accounts for another factor 1.6. Solving the same 3.27 N, 7.6 mm test properly gives 5.6e-3 $\to$ 4.6e-3 (96 nodes) $\to$ **2.8e-3 N m$^2$** (centreline), matching an independent 48-node estimate (2.5e-3) and the thin-ring formula (2.1e-3) (`code/checks/static_calibration_geometry.py`).
 * **Per-squeeze rest level does not help** (0.047, worse than a global rest level).
 
 ## What the model cannot do
 
-Explain why shallow squeezes are slower; represent tread lugs, friction or out-of-plane bending (the wall is a thin-ring proxy); separate creep from permanent set. The wall of the thin side was not measured, and bending stiffness is 2.1e-3 to 5.6e-3 N m$^2$ depending on the ring used, so **Young's modulus is only known to "a few tenths to about 2 MPa"**. One tyre, one person, 12 usable squeezes. A caliper reading of the thin wall and a second weight would close most of the uncertainty; a tongs clip with a marker would measure the release.
+Explain why shallow squeezes are slower; represent tread lugs, friction or out-of-plane bending (the wall is a thin-ring proxy); separate creep from permanent set. The wall of the thin side was not measured, so with B = 2.8e-3 N m$^2$ **Young's modulus is about 0.55 MPa for a uniform 11.8 mm wall and up to about 1 MPa if the thin side is 7 mm**. One tyre, one person, one load point, 12 usable squeezes. A caliper reading of the thin wall and a second weight would close most of the remaining uncertainty; a tongs clip with a marker would measure the release.
 
 ## A second object: the pencil pouch (`pouch/`)
 
