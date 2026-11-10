@@ -12,7 +12,7 @@ The assignment asks for a deformation model whose stiffness and damping are fitt
 
 ## Answer in four lines
 
-1. **Video pins down the relaxation time, not stiffness and damping separately.** The tyre is overdamped (no overshoot), so only the stiffness-to-damping ratio is observable: a recovery time of **about 0.14 s**. The profile below shows it is determined to roughly +-30 %.
+1. **Video pins down the relaxation time, not stiffness and damping separately.** The tyre is overdamped (no overshoot), so only the stiffness-to-damping ratio is observable: a recovery time of **about 0.14 s**. It is determined to about +-15 %: bootstrap over events gives **tau = 0.145 s, 95 % CI 0.129 to 0.165**.
 2. **A known force supplies the absolute scale.** A 333 g weight on the standing tyre (also filmed) gives **0.43 N/mm** (0.36 to 0.54) and, with the ratio above, a damping of order **60 N s/m**.
 3. **The hand's release barely matters.** A model with an **instant release and no release parameter** predicts held-out squeezes within 0.001 of one with a fitted release speed. The rubber's own relaxation sets the recovery.
 4. **The remaining error is a floor, not missing physics.** Fitting each event separately reaches **0.020**; any single shared model sits at **0.036 to 0.040**, and every model family tried (first-order, second-order, two time constants, ring, strain-dependent viscosity, ODE discovery) lands on the same number.
@@ -48,6 +48,13 @@ Most of the drop from 0.047 to 0.036 comes from excluding flicks, not from a bet
 * **Noise floor.** Per-event fits (tau and rest free for each event, 12 events) give 0.0196; shared models give 0.036 to 0.040. More model terms did not help (second-order, second time constant, stretched exponential, strain-dependent viscosity, ODE discovery): see `docs/full_log.md`.
 * **Units are bounded by geometry, not by the video.** From the weight test, bending stiffness is 2.1e-3 to 5.6e-3 N m^2 depending on the ring model used. With the tread width (37 mm, caliper), the lip wall (11.8 mm) and an unmeasured thinner main wall (7 to 11.8 mm), Young's modulus is **a few tenths to about 2 MPa**.
 
+**Further checks** (`code/extra_tests.py`, `results/extra_tests.json`):
+
+* **Confidence intervals (bootstrap over the 12 events):** recovery time tau = 0.145 s (95 % CI 0.129 to 0.165); ring stiffness kb = 1.69 (1.40 to 1.96). The profile above gives a wider, asymmetric range for kb (1.5 to 2.8) because it uses a noise level, not resampling.
+* **A second observable, not used in the fit: the tyre's length.** With frozen parameters the ring predicts how the tyre lengthens along the unsqueezed axis while it is squeezed. On the 6 held-out events the error is **0.063**, against 0.103 for "constant at its settled length" and 0.208 for "constant at its starting length". It gets the direction and about 60 % of the size (about +20 % predicted against +33 % measured; the measured major axis also includes finger and shadow). So the 3D shape is doing real work, not only matching one number.
+* **No heavy tail.** A fractional (Mittag-Leffler) recovery, `z = r - (r - z0) E_a(-(t/tau)^a)`, fitted on the same protocol gives **a = 0.96**, essentially the plain exponential, and no better held-out error (0.0372 against 0.0363). The 0.978 plateau is not the start of a slow tail within these 1.2 s windows (longer holds were not filmed).
+* **The depth dependence is not geometry.** Fitted per event, the recovery time rises with start width (shallower squeeze, slower recovery) with correlation **+0.82** and a range of 0.10 to 0.29 s. The ring itself predicts the **opposite sign** (-0.99) and a range of only 0.130 to 0.140 s. So the ring's geometric stiffening does not explain it. What remains is the hand's release or a strain-dependent rubber; the release could not be measured here, so the two cannot be told apart from these clips.
+
 Release-speed table (fixed, not fitted; same events and protocol):
 
 | release speed (diam/s) | instant | 20 | 8 | 4 | 2.72 (fitted) | 1.5 |
@@ -81,11 +88,12 @@ Python with numpy, scipy, opencv, matplotlib, numba (and ffmpeg for the demo). V
 sh run.sh            # steps 2-7 on the saved width signals (about 11 minutes on 8 cores; the slow NumPy ring fit dominates)
 sh run.sh extract    # first re-read the videos (slow)
 sh run.sh demo       # also rebuild figures/demo.mp4 and demo.gif
+sh run.sh extras     # length check, bootstrap CIs, fractional fit, depth test (about 5 minutes)
 ```
 
 ```
 code/        tyre_sig2.py (video -> width), tyre_fit2.py (events, linear models), tyre_ring_fast.py (ring solver), tyre_models_fast.py (all models, bootstrap),
-             tyre_ring3d.py + tyre_ring3d_fit.py (3D stack), identifiability.py, tyre_no_release_param.py, make_demo.py
+             tyre_ring3d.py + tyre_ring3d_fit.py (3D stack), identifiability.py, tyre_no_release_param.py, extra_tests.py, make_demo.py
 results/     json behind every table      figures/   demo, identifiability, geometry, held-out overlays
 load_and_hand/   weight test, Young's modulus, hand-release attempts      docs/full_log.md   the full history, including what did not work
 ```
