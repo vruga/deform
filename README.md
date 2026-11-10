@@ -10,6 +10,13 @@ Interaction: the tyre lies flat, is pinched between finger and thumb to roughly 
 This README covers the video-fitted deformation model. The weight/load test, Young's modulus and the attempts to measure the
 hand's release speed are in the sub-folder `load_and_hand/` (its own README, same experiment).
 
+![held-out squeeze: real video, fitted model, width traces](figures/demo.gif)
+
+*Two held-out squeezes (clips 3 and 4, never used in fitting), 3x slow motion. Left: real video. Middle: the fitted tyre model (the 2D ring extruded over the
+37 mm tread; with full-width contact the 3D stack in `code/tyre_ring3d.py` moves identically). Right: width over time, real (black) vs model (red).
+The model is given only each event's own measured squeezed width. Full video: `figures/demo.mp4`. Rebuild: `code/make_demo.py`.*
+
+
 ---------------------------------------------------------------------------------------------------
 
 ## 1. Data
@@ -169,6 +176,25 @@ The confidence intervals are a paired bootstrap over the 12 leave-one-clip-out e
   fitted release-speed law changes, a sign that its parameters are weakly determined.
 * The ring's advantage is not accuracy. It is a physical model with parameters in real units (experiment part B).
 
+### 5e. Do we need the fitted release speed? (`code/tyre_no_release_param.py`, `results/tyre_no_release_param.json`)
+
+The ring's finger plates retract at a fitted speed, a stand-in for the unmeasured hand. Hand tracking could not replace it (MediaPipe loses the fingertips,
+see `load_and_hand/`; a tongs clip was tried and its jaws could not be separated from the background). So the question was answered the other way:
+**fix the speed instead of fitting it** and refit only stiffness and rest level (same events and protocol as 5d):
+
+| plate release speed (diameters/s, fixed) | train | held-out | LOCO | kb |
+|---|---|---|---|---|
+| instant (300), no release parameter | 0.0266 | 0.0407 | 0.0352 | 1.51 |
+| 20 | 0.0265 | 0.0407 | 0.0351 | 1.52 |
+| 8 | 0.0263 | 0.0405 | 0.0349 | 1.54 |
+| 4 | 0.0257 | 0.0400 | 0.0344 | 1.60 |
+| 2.72 (the fitted value) | 0.0250 | 0.0398 | 0.0339 | 1.74 |
+| 1.5 | 0.0344 | 0.0487 | 0.0438 | 5.73 |
+
+An **instant release with no release parameter** is within 0.001 of the fitted-speed ring (0.0407 vs 0.0398 held-out, 0.0352 vs 0.0339 LOCO). Only a release slower than
+about 1.5 diameters/s hurts. So the rubber's own relaxation explains almost all of the recovery in these clips, and the hand matters mainly for the shallow squeezes (5c).
+The linear first-order model remains slightly better than every ring (0.0363 held-out).
+
 ## 6. The nonlinear model (ring + finger plates), `code/tyre_ring.py`
 
 | item | what we assumed |
@@ -218,6 +244,9 @@ code/tyre_ring_fit.py    ring vs first-order, S2 events, plot of held-out events
 code/tyre_ring2.py       adds the depth law and the weight calibration (results/tyre_ring2.json)
 code/tyre_ring_fast.py   Numba ring simulator (identical to tyre_ring.py, 180x faster)
 code/tyre_models_fast.py all models, one protocol, parallel LOCO + bootstrap (results/tyre_models_fast.json)
+code/tyre_ring3d.py       coarse 3D stack of rings with the stepped wall (section 9); tyre_ring3d_fit.py fits it
+code/tyre_no_release_param.py   release-speed ablation (5e)
+code/make_demo.py        builds figures/demo.mp4 and demo.gif
 code/make_3d_figure.py   held-out overlay and 3D tube with the measured geometry
 code/tyre_fit.py         FIRST attempt (2nd-order only, 8 test events, error 0.096), kept for the history
 code/diag_per_event_tau.py   diagnostic only
@@ -231,3 +260,42 @@ run.sh                   reproduce (python with numpy, scipy, opencv, matplotlib
 
 Earlier tyre work from an older clip set (`../tyre_*.py`, `../tyre_*.json`, `../tyre_videos/`) is left where it was. Its classical
 fits scored about 0.06 and are not comparable.
+
+## 9. Coarse 3D model with the real cross-section (`code/tyre_ring3d.py`, `code/tyre_ring3d_fit.py`, `results/tyre_ring3d.json`)
+
+**What the videos show about the shape** (`figures/geometry/`): the tyre is not a uniform ring. Top view (`tyre_1`), oblique (`tyre_5`) and face-on (`tyre_deformation`)
+show a **step inside** (an inner ledge, so the wall is thicker on one side of the tread), and the side views (`tyre_6`, `tyre_7`) show **two rows of lugs**, 37 mm wide in total.
+The through-hole is 0.65 to 0.70 of the outer diameter, which is the thick-lip wall, 11.8 mm. The thinner wall of the main zone could not be measured at this resolution, so it is a sensitivity value.
+
+**Model.** A stack of 5 rings along the 37 mm tread joined by 3D axial springs; two slices have the lip wall, three the main wall; bending stiffness per slice scales with wall^3.
+Plates press the full width: the squeezes reach about 0.5 of the width, and with partial contact the top-view silhouette cannot narrow below 0.81, so the contact spans the tread.
+Not modelled: out-of-plane bending, lugs, friction, a true solid wall.
+
+| main-zone wall | train | held-out | LOCO | kb | speed | rest |
+|---|---|---|---|---|---|---|
+| 2D ring A (reference) | 0.0250 | 0.0398 | 0.0341 | 1.74 | 2.72 | 0.979 |
+| 3D stack, uniform 11.8 mm (must equal the 2D ring) | 0.0250 | 0.0398 | 0.0340 | 1.75 | 2.72 | 0.979 |
+| 3D stack, main wall 9.5 mm | 0.0250 | 0.0397 | 0.0341 | 1.75 | 2.72 | 0.979 |
+| 3D stack, main wall 7.0 mm | 0.0251 | 0.0392 | 0.0337 | 1.80 | 2.74 | 0.974 |
+
+* With a uniform wall the 3D code reproduces the 2D ring, so the implementation is verified.
+* **The wall profile cannot be identified from the squeeze clips** (0.0392 to 0.0398).
+* **It changes the units.** E = 12 B / sum(b_i t_i^3), lip zone 40 % of the width (an estimate): main wall 11.8 mm gives 0.49 MPa (B = 2.5e-3 N m^2) or 1.11 MPa (B = 5.6e-3); 9.5 mm gives 0.69 or 1.55 MPa; 7.0 mm gives 0.94 or 2.10 MPa.
+  So the modulus is "a few tenths to about 2 MPa": 2.2x from the unresolved bending stiffness (the 16-node and 48-node rings disagree), 1.9x from the unmeasured wall.
+  A caliper or cut section on the thin wall and a second weight in the load test would close it.
+
+## 10. Exploratory work that did not give a result
+* **Tongs clip** (`tyre_with_obj.mov`, 240 fps): rapid repeated pinches with holds under 0.1 s, and the tongs, shadow and tyre merge in one mask. Jaw tracking by background subtraction failed
+  (the camera and lighting shift, so the whole marble lights up). The jaws are thin, so their position would be the plate position; it needs a stabilised or higher-contrast recording.
+* **Red pencil pouch** (several clips): the pouch is held, rotates and is covered by the hand, and the tyre fits do not transfer (RMSE 0.05 to 0.3). Two clean events returned to 1.02 to 1.03 times the starting width, consistent with no residual set but not a measurement.
+* **Weight-lift recovery** (`load_and_hand/`): the tyre rises with the lifted bottle over about 0.33 s and is at full height at separation, so it only shows recovery is faster than that ramp.
+
+## 11. Final results (the flick-excluded set is the final result)
+
+All numbers are RMSE of width / resting width on held-out clips; null = "stays squeezed". The flick rule (a squeeze held under 0.3 s is a flick, not press-hold-release) was written down from the interaction before comparing models;
+most of the drop between the two rows is from that exclusion, not from a better model.
+
+| event set | null | first-order + rest (tau 0.143 s) | ring (nonlinear) | LOCO, first-order / ring |
+|---|---|---|---|---|
+| S1: flicks included (8 train / 7 test) | 0.358 | 0.047 | not run on S1 | 0.045 / n.a. |
+| **S2: flicks excluded, final (6 train / 6 test)** | **0.343** | **0.036** | **0.040** | **0.032 / 0.034** |
