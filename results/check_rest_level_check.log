@@ -1,0 +1,7 @@
+events/clip [3, 3, 3, 3]
+pre-level per event: [1.028 1.    1.    0.973 0.919 0.987 1.01  0.933 0.874 0.914 0.985 0.952]
+settled per event  : [0.967 0.977 1.    0.987 0.987 0.997 0.974 0.956 0.983 0.97  1.007 0.981]
+corr(pre,settled)=0.15
+global rest (baseline)                 tau 0.143 rho 0.978 | train 0.0249 | held-out 0.0363 | tail(t>.6) 0.0207 | LOCO 0.0319
+per-event PRE-squeeze rest (legit)     tau 0.144 rho 0.993 | train 0.0377 | held-out 0.0472 | tail(t>.6) 0.0477 | LOCO 0.0463
+per-event settled rest (ORACLE)        tau 0.151 rho 0.980 | train 0.0227 | held-out 0.0327 | tail(t>.6) 0.0143 | LOCO 0.0281
